@@ -21,15 +21,10 @@ var BASE_PATH = path.resolve(process.env.BASE_PATH || __dirname);
 if (args['help']) {
     printHelp();
 } else if (args.in || args._.includes('-')) {
-    getStdin().then(processFile).catch(error);
+    processFile(process.stdin);
 } else if (args.file) {
-    fs.readFile(path.join(BASE_PATH, args.file), function(err, contents) {
-        if (err) {
-            console.log(err);
-        } else {
-            processFile(contents.toString());
-        }
-    })	
+    let stream = fs.createReadStream(path.resolve(BASE_PATH || __dirname, args.file));
+    processFile(stream);
 } else {
     error();
 }
@@ -40,8 +35,10 @@ function error(message) {
     console.log(message);
 }
 
-function processFile(content) {
-    console.log(content.toString());
+function processFile(inStream) {
+    let outStream = inStream;
+    let targetStream = process.stdout;
+    outStream.pipe(targetStream);
 }
 
 function printHelp() {
